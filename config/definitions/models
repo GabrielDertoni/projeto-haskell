@@ -1,0 +1,30 @@
+User
+    name        Text
+    username    Text
+    birthdate   Date
+    date        Date
+    balance     Currency
+
+Planet
+    name        Text
+    mass        Weight
+    type        PlanetType
+    disttoearth Distance
+    radius      Distance
+
+Transaction
+    buyer       UserId
+    seller      UserId
+    planet      PlanetId
+    ammount     Currency
+    date        Date
+
+-- User planet 1-n relation table
+UserPlanetRel
+    user        UserId
+    planet      PlanetId
+
+-- User transaction 1-n relation table
+UserTransactionRel
+    user        UserId
+    transaction TransactionId

@@ -8,7 +8,6 @@ copyright:           "2022 Author name here"
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -22,6 +21,28 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base
 - yesod
+- text
+- persistent
+- persistent-postgresql
+- postgresql-simple
+- monad-logger
+- bytestring
+- QuickCheck
+
+default-extensions:
+- OverloadedStrings
+- QuasiQuotes
+- TemplateHaskell
+- TypeFamilies
+- GADTs
+- DerivingStrategies
+- GeneralizedNewtypeDeriving
+- StandaloneDeriving
+- UndecidableInstances
+- DataKinds
+- FlexibleInstances
+- MultiParamTypeClasses
+
 
 library:
   source-dirs: src
