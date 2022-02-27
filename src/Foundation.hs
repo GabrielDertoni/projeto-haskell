@@ -20,7 +20,7 @@ mkYesodData "StellariumApp" [parseRoutes|
     /sellPlanet                 SellPlanetR             POST
     /discoverPlanet             DiscoverPlanetR         POST
     /transfer                   TransferR               POST
-    /transaction/#TransactionId TransactionByIdR    GET      PATCH DELETE
+    /transaction/#TransactionId TransactionByIdR    GET            DELETE
 |]
 
 instance Yesod StellariumApp

@@ -103,35 +103,6 @@ getTransactionByIdR transactionId = do
     transaction <- runDB $ get404 transactionId
     sendStatusJSON ok200 $ toJSON transaction
 
-data TransactionPatch = TransactionPatch
-    { patchTransactionBuyer  :: Maybe (Maybe DB.UserId)
-    , patchTransactionSeller :: Maybe DB.UserId
-    , patchTransactionPlanet :: Maybe DB.PlanetId
-    , patchTransactionAmount :: Maybe DB.Currency
-    }
-
-instance FromJSON TransactionPatch where
-    parseJSON = withObject "TransactionPatch" $ \obj -> do
-        patchTransactionBuyer  <- obj .:? "buyer"
-        patchTransactionSeller <- obj .:? "seller"
-        patchTransactionPlanet <- obj .:? "planet"
-        patchTransactionAmount <- obj .:? "amount"
-        return TransactionPatch{..}
-
-
-patchTransactionByIdR :: DB.TransactionId -> Handler Value
-patchTransactionByIdR transactionId = do
-    TransactionPatch {..} <- requireCheckJsonBody :: Handler TransactionPatch
-
-    let patchData = catMaybes [ (DB.TransactionBuyer  =.) <$> patchTransactionBuyer
-                              , (DB.TransactionSeller =.) <$> patchTransactionSeller
-                              , (DB.TransactionPlanet =.) <$> patchTransactionPlanet
-                              , (DB.TransactionAmount =.) <$> patchTransactionAmount
-                              ]
-    runDB $ update transactionId patchData
-
-    sendStatusJSON noContent204 emptyObject
-
 deleteTransactionByIdR :: DB.TransactionId -> Handler Value
 deleteTransactionByIdR transactionId = do
     runDB $ delete transactionId
