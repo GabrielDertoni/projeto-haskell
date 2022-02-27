@@ -4,12 +4,12 @@
 
 ### Setup
 
-1. [Install postgres](###install-postgres)
-2. [Setup postgres to listen on localhost](###setup-postgres-to-listen-on-localhost)
-3. [Start postgres](###start-postgres)
-4. [Create a `settings.yaml` file](###settings)
-5. [Create a database](###creating-databases) with the same name as configured in the config file
-6. [Change the postgres user password](###changin-user-password) to match the `settings.yaml` file
+1. [Install postgres](#install-postgres)
+2. [Setup postgres to listen on localhost](#setup-postgres-to-listen-on-localhost)
+3. [Start postgres](#start-postgres)
+4. [Create a `settings.yaml` file](#settings)
+5. [Create a database](#creating-databases) with the same name as configured in the config file
+6. [Change the postgres user password](#changin-user-password) to match the `settings.yaml` file
 7. Compile the code with `stack build` (this may take a while)
 8. Run with `stack run`
 
@@ -71,7 +71,7 @@ In order to run something as if on the `postgres` user, run `sudo -u postgres
 
 ### Creating databases
 
-Make sure to [be in the postgres command line](###entering-the-postgres-command-line).
+Make sure to [be in the postgres command line](#entering-the-postgres-command-line).
 
 ```sh
 CREATE DATABASE <database name>;
@@ -79,7 +79,7 @@ CREATE DATABASE <database name>;
 
 ### Deleting databases
 
-Make sure to [be in the postgres command line](###entering-the-postgres-command-line).
+Make sure to [be in the postgres command line](#entering-the-postgres-command-line).
 
 ```sh
 DROP DATABASE <database name>;
@@ -87,7 +87,7 @@ DROP DATABASE <database name>;
 
 ### Changin user password
 
-Make sure to [be in the postgres command line](###entering-the-postgres-command-line).
+Make sure to [be in the postgres command line](#entering-the-postgres-command-line).
 
 ```sh
 ALTER USER postgres PASSWORD '<new password>';
