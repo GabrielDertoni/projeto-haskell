@@ -23,7 +23,7 @@ data UserCreate = UserCreate { createUserName :: Text
 
 postUserR :: Handler Value
 postUserR = do
-    UserCreate{..} <- requireCheckJsonBody :: Handler UserCreate
+    UserCreate{..} <- requireCheckJsonBody
     now <- liftIO getCurrentTime
     let (year, month, day) = toGregorian $ utctDay now
     let user = DB.User { DB.userName      = createUserName

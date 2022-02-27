@@ -13,8 +13,11 @@ import Database.PostgreSQL.Simple  (ConnectInfo(..), postgreSQLConnectionString)
 import Database.Models
 import Settings
 import CliOpts
-import Handler.User
 import Foundation
+
+-- Handlers
+import Handler.User
+import Handler.Planet
 
 mkYesodDispatch "StellariumApp" resourcesStellariumApp
 
