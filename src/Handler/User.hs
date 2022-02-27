@@ -2,14 +2,13 @@ module Handler.User where
 
 import Yesod
 import Data.Aeson.Types
-import Data.Aeson (toJSON)
+import Data.Aeson (FromJSON(..), toJSON)
 import Data.Maybe
 import Data.Text
 import Data.Time.Clock (getCurrentTime, utctDay)
 import Data.Time.Calendar (toGregorian)
 import Data.Maybe (catMaybes)
 import Database.Persist.Postgresql
-import GHC.Generics
 import Network.HTTP.Types
 
 import qualified Database.Models as DB
@@ -19,7 +18,16 @@ data UserCreate = UserCreate { createUserName :: Text
                              , createUserNickname :: Text
                              , createUserEmail :: Text
                              , createUserBirthdate :: DB.Date
-                             } deriving (Generic, FromJSON)
+                             }
+
+instance FromJSON UserCreate where
+    parseJSON = withObject "UserCreate" $ \obj -> do
+        createUserName      <- obj .: "name"
+        createUserNickname  <- obj .: "nickname"
+        createUserEmail     <- obj .: "email"
+        createUserBirthdate <- obj .: "birthdate"
+        return UserCreate{..}
+
 
 postUserR :: Handler Value
 postUserR = do
@@ -50,7 +58,14 @@ data UserPatch = UserPatch
     { patchUserName  :: Maybe Text
     , patchUserNickname :: Maybe Text
     , patchUserEmail :: Maybe Text
-    } deriving (Generic, FromJSON)
+    }
+
+instance FromJSON UserPatch where
+    parseJSON = withObject "UserPatch" $ \obj -> do
+        patchUserName      <- obj .:? "name"
+        patchUserNickname  <- obj .:? "nickname"
+        patchUserEmail     <- obj .:? "email"
+        return UserPatch{..}
 
 
 patchUserByIdR :: DB.UserId -> Handler Value
