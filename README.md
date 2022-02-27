@@ -4,7 +4,7 @@
 
 ### Setup
 
-1. [Install postgres](#install-postgres)
+1. [Install postgres](#install-postgresql)
 2. [Setup postgres to listen on localhost](#setup-postgres-to-listen-on-localhost)
 3. [Start postgres](#start-postgres)
 4. [Create a `settings.yaml` file](#settings)
