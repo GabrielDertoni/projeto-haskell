@@ -1,0 +1,11 @@
+# The port the application will be served on
+port: 8080
+
+# Postgres database config.
+database:
+  user: "postgres"
+  password: "12345"
+  host: "localhost"
+  port: 5432
+  name: "stellarium"
+  pool-size: 10
