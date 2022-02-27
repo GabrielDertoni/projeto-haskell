@@ -1,18 +1,18 @@
-User
+User json
     name        Text
     username    Text
     birthdate   Date
     date        Date
     balance     Currency
 
-Planet
+Planet json
     name        Text
     mass        Weight
     type        PlanetType
     disttoearth Distance
     radius      Distance
 
-Transaction
+Transaction json
     buyer       UserId
     seller      UserId
     planet      PlanetId

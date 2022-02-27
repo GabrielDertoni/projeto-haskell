@@ -31,9 +31,14 @@ dependencies:
 - bytestring
 - optparse-applicative
 - yaml
+- http-types
+- scientific
 - QuickCheck
 
 default-extensions:
+- ViewPatterns
+- DeriveGeneric
+- DeriveAnyClass
 - OverloadedStrings
 - QuasiQuotes
 - TemplateHaskell

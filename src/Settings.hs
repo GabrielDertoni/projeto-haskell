@@ -1,4 +1,7 @@
-module Settings where
+module Settings ( DBSettings(..)
+                , AppSettings(..)
+                , getPostgresConnStr
+                ) where
 
 import Data.Word                (Word16)
 import Numeric.Natural          (Natural)

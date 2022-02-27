@@ -23,7 +23,11 @@ source-repository head
 
 library
   exposed-modules:
+      CliOpts
       Database.Models
+      Database.Operations
+      Foundation
+      Handler.User
       Lib
       Settings
   other-modules:
@@ -31,6 +35,9 @@ library
   hs-source-dirs:
       src
   default-extensions:
+      ViewPatterns
+      DeriveGeneric
+      DeriveAnyClass
       OverloadedStrings
       QuasiQuotes
       TemplateHaskell
@@ -50,11 +57,13 @@ library
     , base
     , bytestring
     , ghc
+    , http-types
     , monad-logger
     , optparse-applicative
     , persistent
     , persistent-postgresql
     , postgresql-simple
+    , scientific
     , text
     , yaml
     , yesod
@@ -67,6 +76,9 @@ executable projeto-haskell-exe
   hs-source-dirs:
       app
   default-extensions:
+      ViewPatterns
+      DeriveGeneric
+      DeriveAnyClass
       OverloadedStrings
       QuasiQuotes
       TemplateHaskell
@@ -87,12 +99,14 @@ executable projeto-haskell-exe
     , base
     , bytestring
     , ghc
+    , http-types
     , monad-logger
     , optparse-applicative
     , persistent
     , persistent-postgresql
     , postgresql-simple
     , projeto-haskell
+    , scientific
     , text
     , yaml
     , yesod
@@ -106,6 +120,9 @@ test-suite projeto-haskell-test
   hs-source-dirs:
       test
   default-extensions:
+      ViewPatterns
+      DeriveGeneric
+      DeriveAnyClass
       OverloadedStrings
       QuasiQuotes
       TemplateHaskell
@@ -126,12 +143,14 @@ test-suite projeto-haskell-test
     , base
     , bytestring
     , ghc
+    , http-types
     , monad-logger
     , optparse-applicative
     , persistent
     , persistent-postgresql
     , postgresql-simple
     , projeto-haskell
+    , scientific
     , text
     , yaml
     , yesod
