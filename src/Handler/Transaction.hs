@@ -58,8 +58,10 @@ postSellPlanetR = do
                                         }
 
     case res of
-      Nothing -> sendStatusJSON notFound404 $ object ["error" .= ("planet or user not found" :: Text)]
-      Just _  -> sendStatusJSON ok200 emptyObject
+      Nothing             -> sendStatusJSON notFound404
+                                $ object ["error" .= ("planet or user not found" :: Text)]
+      Just transactionId  -> sendStatusJSON ok200
+                                $ object ["transactionId" .= transactionId]
 
 postTransferR :: Handler Value
 postTransferR = do
