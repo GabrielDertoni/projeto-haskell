@@ -59,8 +59,8 @@ data Date = Date { year :: Int
 
 instance Ord Date where
     a <= b
-      | year  a <= year  b = True
-      | month a <= month b = True
+      | year  a <  year  b = True
+      | month a <  month b = True
       | day   a <= day   b = True
       | otherwise          = False
 
