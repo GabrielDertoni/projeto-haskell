@@ -145,6 +145,6 @@ instance Arbitrary GenPlanet where
                                                 , DB.planetDisttoearth = disttoearth
                                                 , DB.planetRadius = radius
                                                 , DB.planetIco = ico
-                                                , DB.planetOwnerId = owner
+                                                , DB.planetOwnerId = Just owner
                                                 }
 

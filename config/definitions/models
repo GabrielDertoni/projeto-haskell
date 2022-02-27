@@ -14,7 +14,8 @@ Planet json
     radius      Distance
     -- The planet's Initial Coin Offering
     ico         Currency
-    ownerId     UserId
+    -- If the ownerId is `Nothing`, the planet has no owner
+    ownerId     UserId Maybe
 
 Transaction json
     -- If the buyer is `Nothing`, the planet will be destroyed for it's ICO
@@ -23,14 +24,3 @@ Transaction json
     planet      PlanetId
     amount      Currency
     created     UTCTime
-
--- User planet 1-n relation table
-UserPlanetRel
-    userId        UserId
-    planetId      PlanetId
-    UniqueUserPlanet userId planetId
-
--- User transaction 1-n relation table
-UserTransactionRel
-    user        UserId
-    transaction TransactionId

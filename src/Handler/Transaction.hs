@@ -9,6 +9,7 @@ import Data.Time.Clock (getCurrentTime)
 import Data.Maybe (catMaybes)
 import Database.Persist.Postgresql
 import Control.Monad.Trans.Maybe (runMaybeT)
+import Control.Monad (guard)
 import Network.HTTP.Types
 
 import qualified Database.Models as DB
@@ -42,53 +43,23 @@ instance FromJSON PlanetSell where
 postSellPlanetR :: Handler Value
 postSellPlanetR = do
     PlanetSell{..} <- requireCheckJsonBody
+    now <- liftIO $ getCurrentTime
     res <- runDB $ runMaybeT $ do
         Just planet <- lift $ get sellPlanetPlanetId
         Just user   <- lift $ get sellPlanetUserId
         lift $ do let balance = DB.userBalance user + DB.planetIco planet
                   update sellPlanetUserId [DB.UserBalance =. balance]
-                  delete sellPlanetPlanetId
+                  -- Register the transaction
+                  insert DB.Transaction { DB.transactionBuyer = Nothing
+                                        , DB.transactionSeller = sellPlanetUserId
+                                        , DB.transactionAmount = DB.planetIco planet
+                                        , DB.transactionCreated = now
+                                        , DB.transactionPlanet = sellPlanetPlanetId
+                                        }
 
     case res of
       Nothing -> sendStatusJSON notFound404 $ object ["error" .= ("planet or user not found" :: Text)]
-      Just _ -> sendStatusJSON ok200 emptyObject
-
-    {-
-postDepositR :: Handler Value
-postDepositR = do
-    TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
-    today <- liftIO getToday
-    let transaction = DB.Transaction { DB.transactionBuyer  = createTransactionBuyer
-                                     , DB.transactionSeller = Nothing
-                                     , DB.transactionPlanet = Nothing
-                                     , DB.transactionAmount = createTransactionAmount
-                                     , DB.transactionDate   = today
-                                     }
-    transactionId <- runDB $ insert transaction
-
-    runDB $ update userId [DB.UserBalance +=. createTransactionAmount]
-
-    sendStatusJSON created201
-        $ object ["TransactionId" .= fromSqlKey transactionId]
-
-
-postWithdrawR :: Handler Value
-postWithdrawR = do
-    TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
-    today <- liftIO getToday
-    let transaction = DB.Transaction { DB.transactionBuyer  = Nothing
-                                     , DB.transactionSeller = createTransactionSeller
-                                     , DB.transactionPlanet = undefined
-                                     , DB.transactionAmount = createTransactionAmount
-                                     , DB.transactionDate   = today
-                                     }
-    transactionId <- runDB $ insert transaction
-
-    runDB $ update userId [DB.UserBalance -=. createTransactionAmount]
-
-    sendStatusJSON created201
-        $ object ["TransactionId" .= fromSqlKey transactionId]
-        -}
+      Just _  -> sendStatusJSON ok200 emptyObject
 
 postTransferR :: Handler Value
 postTransferR = do
@@ -100,13 +71,27 @@ postTransferR = do
                                      , DB.transactionAmount  = createTransactionAmount
                                      , DB.transactionCreated = now
                                      }
-    transactionId <- runDB $ insert transaction
+    maybeTransactionId <- runDB $ runMaybeT $ do
+        Just buyer  <- lift $ get createTransactionBuyer
+        Just seller <- lift $ get createTransactionSeller
+        -- We won't use this here. But we still want to make sure that the
+        -- planet exists!
+        Just _      <- lift $ get createTransactionPlanet
+        -- Make sure that the buyer has enough money
+        guard $ DB.userBalance buyer >= createTransactionAmount
+        let buyerBalance = DB.userBalance buyer - createTransactionAmount
+        let sellerBalance = DB.userBalance seller + createTransactionAmount
+        lift $ do
+            update createTransactionBuyer [DB.UserBalance =. buyerBalance]
+            update createTransactionSeller [DB.UserBalance =. sellerBalance]
+            update createTransactionPlanet [DB.PlanetOwnerId =. Just createTransactionBuyer]
+            insert transaction
 
-    runDB $ update createTransactionBuyer [DB.UserBalance -=. createTransactionAmount]
-    runDB $ update createTransactionSeller [DB.UserBalance +=. createTransactionAmount]
-
-    sendStatusJSON created201
-        $ object ["TransactionId" .= fromSqlKey transactionId]
+    case maybeTransactionId of
+      Nothing            -> sendStatusJSON notAcceptable406
+                                $ object ["error" .= ("not permited" :: Text)]
+      Just transactionId -> sendStatusJSON created201
+                                $ object ["transactionId" .= fromSqlKey transactionId]
 
 getTransactionByIdR :: DB.TransactionId -> Handler Value
 getTransactionByIdR transactionId = do
