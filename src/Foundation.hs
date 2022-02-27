@@ -12,9 +12,11 @@ data StellariumApp = StellariumApp { connectionPool  :: ConnectionPool }
 mkYesodData "StellariumApp" [parseRoutes|
     /user                       UserR                   POST
     /user/#UserId               UserByIdR           GET      PATCH DELETE
+    /userList                   UserListR           GET
     /userPlanets/#UserId        UserPlanetsR        GET
     /planet                     PlanetR                 POST
     /planet/#PlanetId           PlanetByIdR         GET      PATCH DELETE
+    /planetList                 PlanetListR         GET
     /sellPlanet                 SellPlanetR             POST
     /discoverPlanet             DiscoverPlanetR         POST
     /transfer                   TransferR               POST

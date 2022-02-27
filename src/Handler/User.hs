@@ -84,3 +84,8 @@ getUserPlanetsR :: DB.UserId -> Handler Value
 getUserPlanetsR userId = do
     planets <- runDB $ selectList [DB.PlanetOwnerId ==. Just userId] []
     sendStatusJSON ok200 $ object ["planets" .= toJSON planets]
+
+getUserListR :: Handler Value
+getUserListR = do
+    users <- runDB $ selectList [] [Desc DB.UserBalance]
+    sendStatusJSON ok200 $ object ["users" .= toJSON users]

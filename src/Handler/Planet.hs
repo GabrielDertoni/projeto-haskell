@@ -84,6 +84,11 @@ postDiscoverPlanetR = do
                                   , "id"     .= planetId
                                   ]
 
+getPlanetListR :: Handler Value
+getPlanetListR = do
+    planets <- runDB $ selectList [] [Desc DB.PlanetIco]
+    sendStatusJSON ok200 $ object ["planets" .= toJSON planets]
+
 instance Arbitrary DB.Weight where
     arbitrary = DB.Kg <$> choose (10 ^ 6, 10 ^ 18)
 
