@@ -18,6 +18,7 @@ import Foundation
 -- Handlers
 import Handler.User
 import Handler.Planet
+import Handler.Transaction
 
 mkYesodDispatch "StellariumApp" resourcesStellariumApp
 

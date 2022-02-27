@@ -17,7 +17,7 @@ Transaction json
     buyer       UserId
     seller      UserId
     planet      PlanetId
-    ammount     Currency
+    amount      Currency
     date        Date
 
 -- User planet 1-n relation table
