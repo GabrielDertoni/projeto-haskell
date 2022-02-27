@@ -15,20 +15,6 @@ import Network.HTTP.Types
 import qualified Database.Models as DB
 import Foundation
 
-data TransactionCreate = TransactionCreate { createTransactionBuyer  :: DB.UserId
-                                           , createTransactionSeller :: DB.UserId
-                                           , createTransactionPlanet :: DB.PlanetId
-                                           , createTransactionAmount :: DB.Currency
-                                           }
-
-instance FromJSON TransactionCreate where
-    parseJSON = withObject "TransactionCreate" $ \obj -> do
-        createTransactionBuyer  <- obj .: "buyer"
-        createTransactionSeller <- obj .: "seller"
-        createTransactionPlanet <- obj .: "planet"
-        createTransactionAmount <- obj .: "amount"
-        return TransactionCreate{..}
-
 data PlanetSell = PlanetSell { sellPlanetPlanetId :: DB.PlanetId
                              , sellPlanetUserId :: DB.UserId
                              -- TODO: sellPlanetUserSignature :: String
@@ -46,9 +32,12 @@ postSellPlanetR = do
     now <- liftIO $ getCurrentTime
     res <- runDB $ runMaybeT $ do
         Just planet <- lift $ get sellPlanetPlanetId
+        -- Make sure that the user owns the planet
+        guard $ DB.planetOwnerId planet == Just sellPlanetUserId
         Just user   <- lift $ get sellPlanetUserId
         lift $ do let balance = DB.userBalance user + DB.planetIco planet
                   update sellPlanetUserId [DB.UserBalance =. balance]
+                  update sellPlanetPlanetId [DB.PlanetOwnerId =. Nothing]
                   -- Register the transaction
                   insert DB.Transaction { DB.transactionBuyer = Nothing
                                         , DB.transactionSeller = sellPlanetUserId
@@ -59,9 +48,23 @@ postSellPlanetR = do
 
     case res of
       Nothing             -> sendStatusJSON notFound404
-                                $ object ["error" .= ("planet or user not found" :: Text)]
+                                $ object ["error" .= ("not allowed" :: Text)]
       Just transactionId  -> sendStatusJSON ok200
                                 $ object ["transactionId" .= transactionId]
+
+data TransactionCreate = TransactionCreate { createTransactionBuyer  :: DB.UserId
+                                           , createTransactionSeller :: DB.UserId
+                                           , createTransactionPlanet :: DB.PlanetId
+                                           , createTransactionAmount :: DB.Currency
+                                           }
+
+instance FromJSON TransactionCreate where
+    parseJSON = withObject "TransactionCreate" $ \obj -> do
+        createTransactionBuyer  <- obj .: "buyer"
+        createTransactionSeller <- obj .: "seller"
+        createTransactionPlanet <- obj .: "planet"
+        createTransactionAmount <- obj .: "amount"
+        return TransactionCreate{..}
 
 postTransferR :: Handler Value
 postTransferR = do
