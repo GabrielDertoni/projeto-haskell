@@ -4,14 +4,15 @@
 
 ### Setup
 
-1. [Install postgres](#install-postgresql)
-2. [Setup postgres to listen on localhost](#setup-postgres-to-listen-on-localhost)
-3. [Start postgres](#start-postgres)
-4. [Create a `settings.yaml` file](#settings)
-5. [Create a database](#creating-databases) with the same name as configured in the config file
-6. [Change the postgres user password](#changin-user-password) to match the `settings.yaml` file
-7. Compile the code with `stack build` (this may take a while)
-8. Run with `stack run`
+- [projeto-haskell](#projeto-haskell)
+  - [Usage](#usage)
+    - [Setup](#setup)
+    - [Settings](#settings)
+  - [Database operations](#database-operations)
+    - [Entering the postgres command line](#entering-the-postgres-command-line)
+    - [Creating databases](#creating-databases)
+    - [Deleting databases](#deleting-databases)
+    - [Changing user password](#changing-user-password)
 
 ### Settings
 
@@ -36,30 +37,68 @@ database:
 
 ## Database operations
 
-### Install postgresql
+<details>
+<summary>Setup on Ubuntu</summary>
 
-```sh
-sudo apt update
-sudo apt install postgresql postgresql-contrib libpq-dev
-```
+1. Install postgresql
 
-### Setup postgres to listen on localhost
+  ```sh
+  sudo apt update
+  sudo apt install postgresql postgresql-contrib libpq-dev
+  ```
 
-Edit `/etc/postgresql/12/main/postgresql.conf` and uncomment the line
-`listen_address = 'localhost'` by removing the leading `'#'`. Also make sure
-that the port is set to `5432`.
+2. Setup postgres to listen on localhost
 
-### Start postgres
+  Edit `/etc/postgresql/12/main/postgresql.conf` and uncomment the line
+  `listen_address = 'localhost'` by removing the leading `'#'`. Also make sure
+  that the port is set to `5432`.
 
-```sh
-sudo service postgresql start
-```
+3. Start postgres
 
-### Shut down postgres
+  ```sh
+  sudo service postgresql start
+  ```
 
-```sh
-sudo service postgresql stop
-```
+4. Shut down postgres
+
+  ```sh
+  sudo service postgresql stop
+  ```
+
+</details>
+
+<details>
+<summary>Setup on Arch</summary>
+
+1. Install postgresql
+
+  Install the `postgresql` package.
+
+2. Setup user
+
+  ```sh
+  sudo su postgres
+  initdb -D /var/lib/postgres/data
+  systemctl start postgresql
+  createuser --interative
+  ```
+
+  Then use the same name as your default user on that machine, and also enable it
+  to user the superuser.
+
+3. Setup postgres to listen on localhost
+
+  After exiting the postgres user (simply Control + D out of it).
+
+  ```sh
+  sudo cp /usr/share/postgresql/postgresql.conf.sample /var/lib/postgres/postgresql.conf
+  ```
+
+  Then edit `/var/lib/postgres/postgresql.conf` and uncomment the line
+  `listen_address = 'localhost'` by removing the leading `'#'`. Also make sure
+  that the port is set to `5432`.
+
+</details>
 
 ### Entering the postgres command line
 
@@ -85,7 +124,7 @@ Make sure to [be in the postgres command line](#entering-the-postgres-command-li
 DROP DATABASE <database name>;
 ```
 
-### Changin user password
+### Changing user password
 
 Make sure to [be in the postgres command line](#entering-the-postgres-command-line).
 
