@@ -1,6 +1,6 @@
 User json
     name        Text
-    username    Text
+    nickname    Text
     birthdate   Date
     date        Date
     balance     Currency

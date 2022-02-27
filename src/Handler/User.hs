@@ -15,7 +15,7 @@ import qualified Database.Models as DB
 import Foundation
 
 data UserCreate = UserCreate { name :: Text
-                             , username :: Text
+                             , nickname :: Text
                              , birthdate :: DB.Date
                              } deriving (Generic, FromJSON)
 
@@ -25,7 +25,7 @@ postUserR = do
     now <- liftIO getCurrentTime
     let (year, month, day) = toGregorian $ utctDay now
     let user = DB.User { DB.userName = name userCrate
-                       , DB.userUsername = username userCrate
+                       , DB.userNickname = nickname userCrate
                        , DB.userBirthdate = birthdate userCrate
                        , DB.userDate = DB.Date { DB.year = fromIntegral year
                                                , DB.month = fromIntegral month
@@ -45,8 +45,8 @@ getUserByIdR userId = do
 
 {-
 data UserPatch = UserPatch
-    { userMaybeName  :: Maybe Text
-    , userMaybeEmail :: Maybe Text
+    { patchUserName  :: Maybe Text
+    , patchUserUserName :: Maybe Text
     } deriving (Generic, FromJSON)
 
 
