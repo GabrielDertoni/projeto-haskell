@@ -79,3 +79,8 @@ deleteUserByIdR :: DB.UserId -> Handler Value
 deleteUserByIdR userId = do
     runDB $ delete userId
     sendStatusJSON noContent204 emptyObject
+
+getUserPlanetsR :: DB.UserId -> Handler Value
+getUserPlanetsR userId = do
+    planets <- runDB $ selectList [DB.PlanetOwnerId ==. userId] []
+    sendStatusJSON ok200 $ object ["planets" .= toJSON planets]

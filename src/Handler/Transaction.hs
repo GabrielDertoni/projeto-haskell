@@ -8,6 +8,7 @@ import Data.Text
 import Data.Time.Clock (getCurrentTime)
 import Data.Maybe (catMaybes)
 import Database.Persist.Postgresql
+import Control.Monad.Trans.Maybe (runMaybeT)
 import Network.HTTP.Types
 
 import qualified Database.Models as DB
@@ -26,6 +27,31 @@ instance FromJSON TransactionCreate where
         createTransactionPlanet <- obj .: "planet"
         createTransactionAmount <- obj .: "amount"
         return TransactionCreate{..}
+
+data PlanetSell = PlanetSell { sellPlanetPlanetId :: DB.PlanetId
+                             , sellPlanetUserId :: DB.UserId
+                             -- TODO: sellPlanetUserSignature :: String
+                             }
+
+instance FromJSON PlanetSell where
+    parseJSON = withObject "PlanetSell" $ \obj -> do
+        sellPlanetPlanetId <- obj .: "planetId"
+        sellPlanetUserId   <- obj .: "userId"
+        return PlanetSell{..}
+
+postSellPlanetR :: Handler Value
+postSellPlanetR = do
+    PlanetSell{..} <- requireCheckJsonBody
+    res <- runDB $ runMaybeT $ do
+        Just planet <- lift $ get sellPlanetPlanetId
+        Just user   <- lift $ get sellPlanetUserId
+        lift $ do let balance = DB.userBalance user + DB.planetIco planet
+                  update sellPlanetUserId [DB.UserBalance =. balance]
+                  delete sellPlanetPlanetId
+
+    case res of
+      Nothing -> sendStatusJSON notFound404 $ object ["error" .= ("planet or user not found" :: Text)]
+      Just _ -> sendStatusJSON ok200 emptyObject
 
     {-
 postDepositR :: Handler Value

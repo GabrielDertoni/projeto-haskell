@@ -8,7 +8,6 @@ import Data.Text (Text(..))
 import Data.Time.Clock (getCurrentTime, utctDay)
 import Data.Time.Calendar (toGregorian)
 import Data.Maybe (catMaybes)
-import Control.Monad.Trans.Maybe (runMaybeT)
 import Database.Persist.Postgresql
 import Network.HTTP.Types
 import Test.QuickCheck
@@ -84,31 +83,6 @@ postDiscoverPlanetR = do
     sendStatusJSON ok200 $ object [ "planet" .= toJSON planet
                                   , "id"     .= planetId
                                   ]
-
-data PlanetSell = PlanetSell { sellPlanetPlanetId :: DB.PlanetId
-                             , sellPlanetUserId :: DB.UserId
-                             -- TODO: sellPlanetUserSignature :: String
-                             }
-
-instance FromJSON PlanetSell where
-    parseJSON = withObject "PlanetSell" $ \obj -> do
-        sellPlanetPlanetId <- obj .: "planetId"
-        sellPlanetUserId   <- obj .: "userId"
-        return PlanetSell{..}
-
-postSellPlanetR :: Handler Value
-postSellPlanetR = do
-    PlanetSell{..} <- requireCheckJsonBody
-    res <- runDB $ runMaybeT $ do
-        Just planet <- lift $ get sellPlanetPlanetId
-        Just user   <- lift $ get sellPlanetUserId
-        lift $ do let balance = DB.userBalance user + DB.planetIco planet
-                  update sellPlanetUserId [DB.UserBalance =. balance]
-                  delete sellPlanetPlanetId
-
-    case res of
-      Nothing -> sendStatusJSON notFound404 $ object ["error" .= ("planet or user not found" :: Text)]
-      Just _ -> sendStatusJSON ok200 emptyObject
 
 instance Arbitrary DB.Weight where
     arbitrary = DB.Kg <$> choose (10 ^ 6, 10 ^ 18)
