@@ -22,6 +22,7 @@ dependencies:
 - base
 - yesod
 - text
+- time
 - persistent
 - persistent-postgresql
 - postgresql-simple
