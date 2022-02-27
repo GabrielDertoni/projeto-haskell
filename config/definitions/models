@@ -3,7 +3,7 @@ User json
     nickname    Text
     email       Text
     birthdate   Date
-    date        Date
+    created     UTCTime
     balance     Currency
 
 Planet json
@@ -12,18 +12,23 @@ Planet json
     type        PlanetType
     disttoearth Distance
     radius      Distance
+    -- The planet's Initial Coin Offering
+    ico         Currency
+    ownerId     UserId
 
 Transaction json
-    buyer       UserId
+    -- If the buyer is `Nothing`, the planet will be destroyed for it's ICO
+    buyer       UserId Maybe
     seller      UserId
     planet      PlanetId
     amount      Currency
-    date        Date
+    created     UTCTime
 
 -- User planet 1-n relation table
 UserPlanetRel
-    user        UserId
-    planet      PlanetId
+    userId        UserId
+    planetId      PlanetId
+    UniqueUserPlanet userId planetId
 
 -- User transaction 1-n relation table
 UserTransactionRel

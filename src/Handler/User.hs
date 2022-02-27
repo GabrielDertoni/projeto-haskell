@@ -5,8 +5,7 @@ import Data.Aeson.Types
 import Data.Aeson (FromJSON(..), toJSON)
 import Data.Maybe
 import Data.Text
-import Data.Time.Clock (getCurrentTime, utctDay)
-import Data.Time.Calendar (toGregorian)
+import Data.Time.Clock (getCurrentTime)
 import Data.Maybe (catMaybes)
 import Database.Persist.Postgresql
 import Network.HTTP.Types
@@ -32,16 +31,12 @@ instance FromJSON UserCreate where
 postUserR :: Handler Value
 postUserR = do
     UserCreate{..} <- requireCheckJsonBody
-    now <- liftIO getCurrentTime
-    let (year, month, day) = toGregorian $ utctDay now
+    now <- liftIO $ getCurrentTime
     let user = DB.User { DB.userName      = createUserName
                        , DB.userNickname  = createUserNickname
                        , DB.userEmail     = createUserEmail
                        , DB.userBirthdate = createUserBirthdate
-                       , DB.userDate      = DB.Date { DB.year  = fromIntegral year
-                                                    , DB.month = fromIntegral month
-                                                    , DB.day   = fromIntegral day
-                                                    }
+                       , DB.userCreated   = now
                        , DB.userBalance   = DB.Stellarium 0
                        }
     userId <- runDB $ insert user

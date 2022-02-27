@@ -6,6 +6,7 @@ import Database.Persist.Quasi
 import Database.Persist.TH
 import Data.Scientific (isInteger)
 import Data.Text
+import Data.Time
 import Data.Aeson (FromJSON(..), Value(..), withObject, withText, withScientific, (.:))
 
 data Weight = Kg Float
@@ -38,6 +39,14 @@ derivePersistField "Currency"
 
 instance FromJSON Currency where
     parseJSON = withScientific "Currency" $ return . Stellarium . realToFrac
+
+instance Num Currency where
+    (Stellarium a) + (Stellarium b) = Stellarium (a + b)
+    (Stellarium a) - (Stellarium b) = Stellarium (a - b)
+    (Stellarium a) * (Stellarium b) = Stellarium (a * b)
+    abs (Stellarium a) = Stellarium (abs a)
+    signum (Stellarium a) = Stellarium (signum a)
+    fromInteger n = Stellarium (fromInteger n)
 
 instance ToJSON Currency where
     toJSON (Stellarium amnt) = Number $ realToFrac amnt

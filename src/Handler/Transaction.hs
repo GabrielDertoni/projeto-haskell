@@ -5,14 +5,12 @@ import Data.Aeson.Types
 import Data.Aeson (FromJSON(..), toJSON)
 import Data.Maybe
 import Data.Text
-import Data.Time.Clock (getCurrentTime, utctDay)
-import Data.Time.Calendar (toGregorian)
+import Data.Time.Clock (getCurrentTime)
 import Data.Maybe (catMaybes)
 import Database.Persist.Postgresql
 import Network.HTTP.Types
 
 import qualified Database.Models as DB
-import Utils (getToday)
 import Foundation
 
 data TransactionCreate = TransactionCreate { createTransactionBuyer  :: DB.UserId
@@ -29,14 +27,14 @@ instance FromJSON TransactionCreate where
         createTransactionAmount <- obj .: "amount"
         return TransactionCreate{..}
 
+    {-
 postDepositR :: Handler Value
 postDepositR = do
     TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
     today <- liftIO getToday
-    let userId = createTransactionBuyer
-    let transaction = DB.Transaction { DB.transactionBuyer  = userId
-                                     , DB.transactionSeller = undefined
-                                     , DB.transactionPlanet = undefined
+    let transaction = DB.Transaction { DB.transactionBuyer  = createTransactionBuyer
+                                     , DB.transactionSeller = Nothing
+                                     , DB.transactionPlanet = Nothing
                                      , DB.transactionAmount = createTransactionAmount
                                      , DB.transactionDate   = today
                                      }
@@ -52,9 +50,8 @@ postWithdrawR :: Handler Value
 postWithdrawR = do
     TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
     today <- liftIO getToday
-    let userId = createTransactionSeller
-    let transaction = DB.Transaction { DB.transactionBuyer  = undefined
-                                     , DB.transactionSeller = userId
+    let transaction = DB.Transaction { DB.transactionBuyer  = Nothing
+                                     , DB.transactionSeller = createTransactionSeller
                                      , DB.transactionPlanet = undefined
                                      , DB.transactionAmount = createTransactionAmount
                                      , DB.transactionDate   = today
@@ -65,24 +62,22 @@ postWithdrawR = do
 
     sendStatusJSON created201
         $ object ["TransactionId" .= fromSqlKey transactionId]
+        -}
 
 postTransferR :: Handler Value
 postTransferR = do
     TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
-    today <- liftIO getToday
-    let buyerId = createTransactionBuyer
-    let sellerId = createTransactionSeller
-    let amount = createTransactionAmount
-    let transaction = DB.Transaction { DB.transactionBuyer  = buyerId
-                                     , DB.transactionSeller = sellerId
-                                     , DB.transactionPlanet = createTransactionPlanet
-                                     , DB.transactionAmount = amount
-                                     , DB.transactionDate   = today
+    now <- liftIO getCurrentTime
+    let transaction = DB.Transaction { DB.transactionBuyer   = Just createTransactionBuyer
+                                     , DB.transactionSeller  = createTransactionSeller
+                                     , DB.transactionPlanet  = createTransactionPlanet
+                                     , DB.transactionAmount  = createTransactionAmount
+                                     , DB.transactionCreated = now
                                      }
     transactionId <- runDB $ insert transaction
 
-    runDB $ update buyerId [DB.UserBalance -=. amount]
-    runDB $ update sellerId [DB.UserBalance +=. amount]
+    runDB $ update createTransactionBuyer [DB.UserBalance -=. createTransactionAmount]
+    runDB $ update createTransactionSeller [DB.UserBalance +=. createTransactionAmount]
 
     sendStatusJSON created201
         $ object ["TransactionId" .= fromSqlKey transactionId]
@@ -93,7 +88,7 @@ getTransactionByIdR transactionId = do
     sendStatusJSON ok200 $ toJSON transaction
 
 data TransactionPatch = TransactionPatch
-    { patchTransactionBuyer  :: Maybe DB.UserId
+    { patchTransactionBuyer  :: Maybe (Maybe DB.UserId)
     , patchTransactionSeller :: Maybe DB.UserId
     , patchTransactionPlanet :: Maybe DB.PlanetId
     , patchTransactionAmount :: Maybe DB.Currency

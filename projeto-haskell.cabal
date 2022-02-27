@@ -71,6 +71,7 @@ library
     , template-haskell
     , text
     , time
+    , transformers
     , yaml
     , yesod
   default-language: Haskell2010
@@ -116,6 +117,7 @@ executable projeto-haskell-exe
     , template-haskell
     , text
     , time
+    , transformers
     , yaml
     , yesod
   default-language: Haskell2010
@@ -162,6 +164,7 @@ test-suite projeto-haskell-test
     , template-haskell
     , text
     , time
+    , transformers
     , yaml
     , yesod
   default-language: Haskell2010
