@@ -26,7 +26,11 @@ dependencies:
 - persistent-postgresql
 - postgresql-simple
 - monad-logger
+- aeson
+- ghc
 - bytestring
+- optparse-applicative
+- yaml
 - QuickCheck
 
 default-extensions:
@@ -42,7 +46,7 @@ default-extensions:
 - DataKinds
 - FlexibleInstances
 - MultiParamTypeClasses
-
+- RecordWildCards
 
 library:
   source-dirs: src
