@@ -60,7 +60,10 @@ deletePlanetByIdR planetId = do
 getDiscoverPlanet :: Handler Value
 getDiscoverPlanet = do
     planet <- liftIO $ (generate arbitrary :: IO DB.Planet)
-    sendStatusJSON ok200 $ toJSON planet
+    planetId <- runDB $ insert planet
+    sendStatusJSON ok200 $ object [ "planet" .= toJSON planet
+                                  , "id"     .= planetId
+                                  ]
 
 instance Arbitrary DB.Weight where
     arbitrary = DB.Kg <$> choose (10 ^ 6, 10 ^ 18)
