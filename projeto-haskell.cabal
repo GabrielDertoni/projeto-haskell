@@ -33,6 +33,7 @@ library
       Lib
       Settings
       Template.PlanetList
+      Utils
   other-modules:
       Paths_projeto_haskell
   hs-source-dirs:

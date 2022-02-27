@@ -2,40 +2,43 @@ module Handler.Transaction where
 
 import Yesod
 import Data.Aeson.Types
-import Data.Aeson (toJSON)
+import Data.Aeson (FromJSON(..), toJSON)
 import Data.Maybe
 import Data.Text
 import Data.Time.Clock (getCurrentTime, utctDay)
 import Data.Time.Calendar (toGregorian)
 import Data.Maybe (catMaybes)
 import Database.Persist.Postgresql
-import GHC.Generics
 import Network.HTTP.Types
 
 import qualified Database.Models as DB
+import Utils (getToday)
 import Foundation
 
 data TransactionCreate = TransactionCreate { createTransactionBuyer  :: DB.UserId
                                            , createTransactionSeller :: DB.UserId
                                            , createTransactionPlanet :: DB.PlanetId
                                            , createTransactionAmount :: DB.Currency
-                                           } deriving (Generic, FromJSON)
+                                           }
 
+instance FromJSON TransactionCreate where
+    parseJSON = withObject "TransactionCreate" $ \obj -> do
+        createTransactionBuyer  <- obj .: "buyer"
+        createTransactionSeller <- obj .: "seller"
+        createTransactionPlanet <- obj .: "planet"
+        createTransactionAmount <- obj .: "amount"
+        return TransactionCreate{..}
 
 postDepositR :: Handler Value
 postDepositR = do
     TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
-    now <- liftIO getCurrentTime
-    let (year, month, day) = toGregorian $ utctDay now
+    today <- liftIO getToday
     let userId = createTransactionBuyer
     let transaction = DB.Transaction { DB.transactionBuyer  = userId
                                      , DB.transactionSeller = undefined
                                      , DB.transactionPlanet = undefined
                                      , DB.transactionAmount = createTransactionAmount
-                                     , DB.transactionDate   = DB.Date { DB.year  = fromIntegral year
-                                                                      , DB.month = fromIntegral month
-                                                                      , DB.day   = fromIntegral day
-                                                                      }
+                                     , DB.transactionDate   = today
                                      }
     transactionId <- runDB $ insert transaction
 
@@ -48,17 +51,13 @@ postDepositR = do
 postWithdrawR :: Handler Value
 postWithdrawR = do
     TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
-    now <- liftIO getCurrentTime
+    today <- liftIO getToday
     let userId = createTransactionSeller
-    let (year, month, day) = toGregorian $ utctDay now
     let transaction = DB.Transaction { DB.transactionBuyer  = undefined
                                      , DB.transactionSeller = userId
                                      , DB.transactionPlanet = undefined
                                      , DB.transactionAmount = createTransactionAmount
-                                     , DB.transactionDate   = DB.Date { DB.year  = fromIntegral year
-                                                                      , DB.month = fromIntegral month
-                                                                      , DB.day   = fromIntegral day
-                                                                      }
+                                     , DB.transactionDate   = today
                                      }
     transactionId <- runDB $ insert transaction
 
@@ -70,8 +69,7 @@ postWithdrawR = do
 postTransferR :: Handler Value
 postTransferR = do
     TransactionCreate{..} <- requireCheckJsonBody :: Handler TransactionCreate
-    now <- liftIO getCurrentTime
-    let (year, month, day) = toGregorian $ utctDay now
+    today <- liftIO getToday
     let buyerId = createTransactionBuyer
     let sellerId = createTransactionSeller
     let amount = createTransactionAmount
@@ -79,10 +77,7 @@ postTransferR = do
                                      , DB.transactionSeller = sellerId
                                      , DB.transactionPlanet = createTransactionPlanet
                                      , DB.transactionAmount = amount
-                                     , DB.transactionDate   = DB.Date { DB.year  = fromIntegral year
-                                                                      , DB.month = fromIntegral month
-                                                                      , DB.day   = fromIntegral day
-                                                                      }
+                                     , DB.transactionDate   = today
                                      }
     transactionId <- runDB $ insert transaction
 
@@ -102,7 +97,15 @@ data TransactionPatch = TransactionPatch
     , patchTransactionSeller :: Maybe DB.UserId
     , patchTransactionPlanet :: Maybe DB.PlanetId
     , patchTransactionAmount :: Maybe DB.Currency
-    } deriving (Generic, FromJSON)
+    }
+
+instance FromJSON TransactionPatch where
+    parseJSON = withObject "TransactionPatch" $ \obj -> do
+        patchTransactionBuyer  <- obj .:? "buyer"
+        patchTransactionSeller <- obj .:? "seller"
+        patchTransactionPlanet <- obj .:? "planet"
+        patchTransactionAmount <- obj .:? "amount"
+        return TransactionPatch{..}
 
 
 patchTransactionByIdR :: DB.TransactionId -> Handler Value
